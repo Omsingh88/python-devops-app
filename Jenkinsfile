@@ -7,12 +7,6 @@ pipeline {
 
     stages {
 
-        stage('Clone') {
-            steps {
-                git 'https://github.com/Omsingh88/python-devops-app.git'
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
                 script {
