@@ -3,6 +3,8 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = "omsingh07/python-devops-app"
+        CONTAINER_NAME = "python-app"
+        PORT = "5000"
     }
 
     stages {
@@ -30,6 +32,26 @@ pipeline {
                     """
                 }
             }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh """
+                    docker pull $DOCKER_IMAGE:latest
+                    docker stop $CONTAINER_NAME || true
+                    docker rm $CONTAINER_NAME || true
+                    docker run -d -p $PORT:$PORT --name $CONTAINER_NAME $DOCKER_IMAGE:latest
+                """
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Deployment Successful!"
+        }
+        failure {
+            echo "❌ Pipeline Failed!"
         }
     }
 }
