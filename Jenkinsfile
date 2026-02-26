@@ -5,6 +5,7 @@ pipeline {
         DOCKER_IMAGE = "omsingh07/python-devops-app"
         CONTAINER_NAME = "python-app"
         PORT = "5000"
+        APP_SERVER = "ubuntu@98.93.18.133"   // 👈 Replace this
     }
 
     stages {
@@ -34,14 +35,18 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy to App Server') {
             steps {
-                sh """
-                    docker pull $DOCKER_IMAGE:latest
-                    docker stop $CONTAINER_NAME || true
-                    docker rm $CONTAINER_NAME || true
-                    docker run -d -p $PORT:$PORT --name $CONTAINER_NAME $DOCKER_IMAGE:latest
-                """
+                sshagent(['app-server-ssh']) {
+                    sh """
+                        ssh -o StrictHostKeyChecking=no $APP_SERVER '
+                        docker pull $DOCKER_IMAGE:${BUILD_NUMBER} &&
+                        docker stop $CONTAINER_NAME || true &&
+                        docker rm $CONTAINER_NAME || true &&
+                        docker run -d -p $PORT:$PORT --name $CONTAINER_NAME $DOCKER_IMAGE:${BUILD_NUMBER}
+                        '
+                    """
+                }
             }
         }
     }
